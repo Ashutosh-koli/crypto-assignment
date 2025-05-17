@@ -1,5 +1,6 @@
 const express = require('express');
 const Stat = require('../models/Stat');
+const storeCryptoStats = require('../services/fetchCrypto');
 
 const router = express.Router();
 
@@ -20,21 +21,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// /deviation?coin=bitcoin
-router.get('/deviation', async (req, res) => {
-  try {
-    const coin = req.query.coin;
-    const records = await Stat.find({ coin }).sort({ timestamp: -1 }).limit(100);
-
-    const prices = records.map(r => r.price);
-    const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const variance = prices.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) / prices.length;
-    const deviation = Math.sqrt(variance);
-
-    res.json({ deviation: +deviation.toFixed(2) });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// manual trigger: /stats/trigger
+router.get('/trigger', async (req, res) => {
+  await storeCryptoStats();
+  res.send({ message: 'Data fetched manually' });
 });
 
 module.exports = router;

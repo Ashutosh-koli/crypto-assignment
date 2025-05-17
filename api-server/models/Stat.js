@@ -5,7 +5,10 @@ const statSchema = new mongoose.Schema({
   price: Number,
   marketCap: Number,
   change24h: Number,
-  timestamp: { type: Date, default: Date.now }
+  timestamp: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 module.exports = mongoose.model('Stat', statSchema);

@@ -2,12 +2,14 @@ const { connect } = require('nats');
 const cron = require('node-cron');
 require('dotenv').config();
 
-(async () => {
-  const nc = await connect({ servers: process.env.NATS_URL });
-  console.log('Worker Server connected to NATS');
+async function startWorker() {
+  const nc = await connect({ servers: 'localhost:4222' });
+  console.log('✅ Connected to NATS (worker)');
 
-  cron.schedule('*/15 * * * *', () => {
-    nc.publish('crypto.update', JSON.stringify({ trigger: 'update' }));
-    console.log('Published update event');
-  });
-})();
+  setInterval(() => {
+    nc.publish('crypto.update', Buffer.from(JSON.stringify({ trigger: 'update' })));
+    console.log('📤 Published update event');
+  }, 15 * 60 * 1000); // every 15 minutes
+}
+
+startWorker().catch(console.error);
